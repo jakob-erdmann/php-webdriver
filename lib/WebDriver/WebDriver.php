@@ -73,7 +73,10 @@ final class WebDriver extends AbstractWebDriver
             'POST',
             '/session',
             $parameters,
-            array(CURLOPT_FOLLOWLOCATION => true)
+            array(
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT => 60,
+            )
         );
 
         return new Session($result['sessionUrl']);
