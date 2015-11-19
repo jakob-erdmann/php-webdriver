@@ -87,6 +87,7 @@ class CurlService implements CurlServiceInterface
         }
 
         curl_setopt($curl, CURLOPT_HTTPHEADER, $customHeaders);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 60);
 
         $rawResult = trim(curl_exec($curl));
         $info = curl_getinfo($curl);
