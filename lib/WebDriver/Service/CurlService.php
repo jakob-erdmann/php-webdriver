@@ -32,6 +32,9 @@ use WebDriver\Exception as WebDriverException;
  */
 class CurlService implements CurlServiceInterface
 {
+    const MAX_RETRIES = 2;
+
+    protected $retries = 0;
     /**
      * {@inheritdoc}
      */
@@ -92,13 +95,23 @@ class CurlService implements CurlServiceInterface
         $rawResult = trim(curl_exec($curl));
         $info = curl_getinfo($curl);
 
+        if (CURLE_OPERATION_TIMEOUTED == curl_errno($curl)) {
+            if ($this->retries < self::MAX_RETRIES) {
+                ++$this->retries;
+
+                return $this->execute($requestMethod, $url, $parameters, $extraOptions);
+            }
+        }
+
+        $this->retries = 0;
+
         if (CURLE_GOT_NOTHING !== curl_errno($curl) && $error = curl_error($curl)) {
             $message = sprintf(
                 'Curl error thrown for http %s to %s%s',
                 $requestMethod,
                 $url,
                 $parameters && is_array($parameters)
-                ? ' with params: ' . json_encode($parameters) : ''
+                    ? ' with params: ' . json_encode($parameters) : ''
             );
 
             throw WebDriverException::factory(WebDriverException::CURL_EXEC, $message . "\n\n" . $error);
